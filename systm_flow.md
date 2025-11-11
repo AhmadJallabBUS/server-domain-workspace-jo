@@ -317,3 +317,9 @@ You now have:
 3. Migrations, systemd service, (optional) Nginx, and backups.
 
 If you want, tell me your OS (Ubuntu/Debian/AlmaLinux) and I can adapt commands, or I can add JWT auth, role-based endpoints, and a proper test suite (pytest + httpx + test DB) next.
+
+
+
+
+## file syetem flow 
+endpoint_serve_python -> server-domain-workspace-jo

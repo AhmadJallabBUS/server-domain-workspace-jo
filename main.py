@@ -19,7 +19,7 @@ app.add_middleware(
 def connect_db():
     try:
         conn = psycopg2.connect(
-            host="44.211.203.69",
+            host="localhost",
             port="5432",
             database="vmail",
             user="postgres",
