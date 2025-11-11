@@ -1,0 +1,105 @@
+URL guide link :https://technicalsahil.com/how-to-install-iredmail-on-ubuntu-20-04/ 
+ URLs of installed web applications:
+*
+* - Roundcube webmail: https://mail.ajcloudsolutions.com/mail/
+* - netdata (monitor): https://mail.ajcloudsolutions.com/netdata/
+*
+* - Web admin panel (iRedAdmin):https://mail.ajcloudsolutions.com/iredadmin
+* You can login to above links with below credential:
+*
+* - Username: postmaster@ajcloudsolutions.com
+* - Password: ahmadAHMAD@1
+*
+********************************************************************
+* Congratulations, mail server setup completed successfully. Please
+* read below file for more information:
+*
+*   - /home/ubuntu/iRedMail-1.7.4/iRedMail.tips
+*
+* And it's sent to your mail account postmaster@ajcloudsolutions.com.
+-------------------DKIM Record 
+amavisd showkeys
+
+
+  "v=DKIM1; p=""MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqbC/0gGiEX6OJWV0heA"
+  "tDM8yvhKHJ4lQvli0rAepVU4ew4UBxOhs7QDzk5UcVdHpJ+OYd/Zmc5brYPeyPDY"
+  "U7Ys9H7bjSDyMhGKvXkznnF1eGzadIaURzuJ/Mr+AK1uH5OSvnwsgQOG9Eibm4/H"
+  "aMF+5CPKtvNt4Y04nFQHy6UsuqjmGZX4o2vx8YvJLxkHW/2Lghi/FeZI5v3UQpW4"
+  "oImIewU4DJvj8GkuLQ2rrmS0EDEbRS5HsIMTe0FTg2YzXWGpzvK3tA363YXH7wI1"
+  "260h8AN43dKY67AG13YtWsCCnL0nzo/Gyr00ZfP5C8stac6A6V9Y7WvBHgVXn9Tu"
+  "PQIDAQAB"
+---------------------------------------SSL 
+apt install certbot python3-certbot-nginx -y
+
+fre
+
+nano /etc/nginx/templates/ssl.tmpl
+
+ssl_certificate /etc/letsencrypt/live/mail.ajcloudsolutions.com/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/mail.ajcloudsolutions.com/privkey.pem;
+
+nano /etc/postfix/main.cf
+
+smtpd_tls_key_file = /etc/letsencrypt/live/mail.ajcloudsolutions.com/privkey.pem
+smtpd_tls_cert_file = /etc/letsencrypt/live/mail.ajcloudsolutions.com/cert.pem
+smtpd_tls_CAfile = /etc/letsencrypt/live/mail.ajcloudsolutions.com/chain.pem
+
+nano /etc/dovecot/dovecot.conf
+
+ssl_cert = </etc/letsencrypt/live/mail.ajcloudsolutions.com/fullchain.pem
+ssl_key = </etc/letsencrypt/live/mail.ajcloudsolutions.com/privkey.pem
+
+
+systemctl restart nginx
+systemctl restart postfix
+systemctl restart dovecot
+
+
+--------------------check mail log 
+sudo tail -f /var/log/mail.log
+tail -f: Displays the last part of a file, and keeps the file open to show new lines as they are written (the "follow" function).
+--------------------database check 
+sudo systemctl status postgresql
+sudo -u postgres psql vmail
+\x :Expanded display is on.
+\dt : display tables 
+https://mail.ajcloudsolutions.com/iredadmin
+
+----change remote access to make it public 
+# as root or with sudo
+sudo -u postgres psql -Atc "SHOW config_file;"
+sudo -u postgres psql -Atc "SHOW data_directory;"
+config_file → full path to postgresql.conf
+
+data_directory → the directory that contains it (and pg_hba.conf)
+
+nano /etc/postgresql/16/main/postgresql.conf 
+listen_addresses = '*'
+
+
+sudo -u postgres psql -Atc "SHOW hba_file;" => this find file bath 
+nano /etc/postgresql/16/main/pg_hba.conf
+host 0.0.0.0/0 md5
+
+hosts       = 127.0.0.1:5432
+user        = vmail
+password    = esRUMDalW2MB1zA7DELiu4DnTitcAC41s
+dbname      = vmail
+query       = SELECT forwardings.forwarding FROM forwardings,alias_domain,domain WHERE alias_domain.alias_domain='%d' A>
+
+
+
+----network check 
+netstat -tulnp 
+----mcp 
+"postgresql": {
+  "command": "npx",
+  "args": [
+    "-y",
+    "@modelcontextprotocol/server-postgres",
+    "postgresql://postgres:postgres@ec2-98-85-145-179.compute-1.amazonaws.com:5432/vmail"
+  ],
+  "env": {},
+  "disabled": false
+}
+------------
